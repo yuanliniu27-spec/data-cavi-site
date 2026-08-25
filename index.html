@@ -1,15 +1,611 @@
 <!doctype html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="AutoCava AI 使用、推荐产品漏斗、线索及预审表现数据看板" />
-    <link rel="icon" href="./favicon.svg" />
-    <title>AutoCava AI 数据概览</title>
-    <script type="module" crossorigin src="/data-cavi-site/assets/index-8tamF5J0.js"></script>
-    <link rel="stylesheet" crossorigin href="/data-cavi-site/assets/index-_nwgQGjt.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 会话数据分析报告</title>
+<style>
+  :root{
+    --bg:#FFFFFF; --surface:#FFFFFF; --surface2:#F6F8FA; --line:#E7ECF1; --line2:#D5DEE6;
+    --ink:#0F1720; --muted:#5B6673; --dim:#9AA5B0;
+    --accent:#1F6FD8; --accent-ink:#1453A6; --soft:#EAF2FC;
+    --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4;
+    --good:#14855A; --warn:#B7791F; --crit:#C0392B;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:where(:not([data-theme="light"])){
+      --bg:#10161D; --surface:#151D26; --surface2:#1B2531; --line:#263140; --line2:#33404F;
+      --ink:#E9EEF4; --muted:#9AA8B6; --dim:#6E7C8B;
+      --accent:#5B9DF0; --accent-ink:#9EC4F7; --soft:#18283C;
+      --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
+      --good:#3FCE94; --warn:#E0A13C; --crit:#EF6A5A;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#10161D; --surface:#151D26; --surface2:#1B2531; --line:#263140; --line2:#33404F;
+    --ink:#E9EEF4; --muted:#9AA8B6; --dim:#6E7C8B;
+    --accent:#5B9DF0; --accent-ink:#9EC4F7; --soft:#18283C;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
+    --good:#3FCE94; --warn:#E0A13C; --crit:#EF6A5A;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI",system-ui,"Helvetica Neue",sans-serif;
+    line-height:1.75;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1020px;margin:0 auto;padding:0 28px 90px}
+  a{color:var(--accent)}
+  .kicker{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:600}
+  h1{font-family:"Iowan Old Style","Songti SC",Palatino,Georgia,serif;font-size:clamp(32px,5vw,50px);
+    line-height:1.08;margin:.5rem 0 1rem;text-wrap:balance;font-weight:500;letter-spacing:-.01em}
+  .lede{font-size:16.5px;color:var(--muted);max-width:62ch}
+  .scopenote{margin-top:20px;font-size:12.5px;color:var(--muted);border:1px solid var(--line);border-left:3px solid var(--accent);
+    padding:11px 16px;border-radius:8px;background:var(--surface2)}
+  .scopenote b{color:var(--ink);font-weight:600}
+  .masthead{padding:58px 0 10px}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:34px}
+  @media(max-width:820px){.stats{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:460px){.stats{grid-template-columns:1fr}}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px 20px 16px}
+  .stat:hover{border-color:var(--line2)}
+  .stat .n{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:30px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink);letter-spacing:-.01em}
+  .stat .k{font-size:12.5px;color:var(--muted);margin-top:6px}
+  .stat .d{font-size:11.5px;color:var(--dim);margin-top:3px}
+  .ov{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px}
+  @media(max-width:820px){.ov{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:460px){.ov{grid-template-columns:1fr}}
+  section{margin-top:64px}
+  h2{font-family:"Iowan Old Style","Songti SC",Palatino,Georgia,serif;font-size:24px;font-weight:600;
+    margin:.4rem 0 6px;text-wrap:balance}
+  h2 .no{font-size:13px;color:var(--dim);font-family:"SF Mono",ui-monospace,Menlo,monospace;margin-right:10px}
+  .sub{color:var(--muted);font-size:14.5px;max-width:76ch}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 24px 14px;margin-top:20px;overflow-x:auto}
+  table{border-collapse:collapse;width:100%;min-width:640px;font-size:14.5px}
+  th,td{padding:13px 12px;text-align:right;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+  th:first-child,td:first-child{text-align:left}
+  thead th{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);font-weight:600;border-bottom:2px solid var(--line2)}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover td{background:var(--surface2)}
+  .hl{font-weight:600;color:var(--accent-ink)}
+  .insight{margin-top:16px;background:var(--surface2);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:8px;padding:13px 18px;font-size:14px;color:var(--muted)}
+  .insight b{color:var(--ink);font-weight:600}
+  /* daily trend chart */
+  .daychart{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px 24px 10px;margin-top:20px;position:relative}
+  .dc-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+  .dc-head h3{font-size:15px;font-weight:600;margin:0}
+  .dc-head .scope{font-size:12px;color:var(--dim)}
+  .dcl{display:flex;gap:18px;margin:0 0 6px 2px;flex-wrap:wrap}
+  .dcl .item{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted)}
+  .dcl .sw{width:14px;height:3px;border-radius:2px;flex:0 0 auto}
+  .dcwrap{position:relative;width:100%}
+  .dcwrap svg{width:100%;height:auto;display:block}
+  .gridl{stroke:var(--line);stroke-width:1}
+  .ylab{font-size:10.5px;fill:var(--dim);font-family:"SF Mono",ui-monospace,Menlo,monospace}
+  .xlab{font-size:10.5px;fill:var(--dim);text-anchor:middle;font-family:"SF Mono",ui-monospace,Menlo,monospace}
+  .areaT{fill:url(#gradT);opacity:.16}
+  .areaD{fill:url(#gradD);opacity:.20}
+  .lineT{fill:none;stroke:var(--s1);stroke-width:2.4;stroke-linejoin:round;stroke-linecap:round}
+  .lineD{fill:none;stroke:var(--s3);stroke-width:2.4;stroke-linejoin:round;stroke-linecap:round}
+  .mk{stroke:var(--surface);stroke-width:1.5}
+  .guide{stroke:var(--line2);stroke-width:1;stroke-dasharray:3 3;display:none}
+  .vlabT{font-size:10px;fill:var(--s1);font-family:"SF Mono",ui-monospace,Menlo,monospace;font-weight:600;text-anchor:middle;font-variant-numeric:tabular-nums}
+  .vlabD{font-size:10px;fill:var(--s3);font-family:"SF Mono",ui-monospace,Menlo,monospace;font-weight:600;text-anchor:middle;font-variant-numeric:tabular-nums}
+  .dctip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;line-height:1.5;
+    padding:7px 11px;border-radius:7px;white-space:nowrap;transform:translate(-50%,-108%);opacity:0;transition:opacity .12s;
+    box-shadow:0 6px 16px rgba(0,0,0,.12);z-index:5}
+  .dctip b{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums}
+  .dcwrap.hover .guide,.dcwrap.hover .dctip{display:block;opacity:1}
+  .dctip .r1{color:var(--s1);font-weight:700}
+  .dctip .r2{color:var(--s3);font-weight:700}
+  /* chart */
+  .chart{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:26px 26px 12px;margin-top:20px}
+  .chart-title{font-size:13.5px;font-weight:600;margin-bottom:4px}
+  .chart-title small{color:var(--dim);font-weight:400;margin-left:6px}
+  .bar-row{display:grid;grid-template-columns:230px 1fr 80px;align-items:center;gap:16px;padding:9px 0;position:relative}
+  @media(max-width:720px){.bar-row{grid-template-columns:1fr}}
+  .bar-label{font-size:14px;font-weight:500;display:flex;align-items:center;gap:9px}
+  .chip{width:11px;height:11px;border-radius:3px;flex:0 0 auto}
+  .track{height:22px;background:var(--surface2);border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+  .fill{height:100%;border-radius:6px;width:0;transition:width 1s cubic-bezier(.2,.7,.2,1)}
+  .bar-num{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink)}
+  .bar-num small{color:var(--dim);font-weight:400}
+  .tip{position:absolute;right:110px;bottom:calc(100% + 4px);background:var(--ink);color:var(--bg);font-size:12px;padding:6px 11px;
+    border-radius:7px;white-space:nowrap;opacity:0;pointer-events:none;transform:translateY(4px);transition:.16s;z-index:5;box-shadow:0 6px 16px rgba(0,0,0,.12)}
+  .bar-row:hover .tip{opacity:1;transform:translateY(0)}
+  .chartlegend{margin-top:8px;font-size:12px;color:var(--dim)}
+  /* mini bar in table */
+  .mini-track{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;width:100%;min-width:80px}
+  .mini-fill{height:100%;border-radius:4px}
+  /* status badge */
+  .badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 10px;border-radius:999px;white-space:nowrap}
+  .badge.good{background:color-mix(in srgb,var(--good) 14%,transparent);color:var(--good)}
+  .badge.partial{background:color-mix(in srgb,var(--warn) 14%,transparent);color:var(--warn)}
+  .badge.miss{background:color-mix(in srgb,var(--crit) 14%,transparent);color:var(--crit)}
+  /* strat blocks */
+  .strat{display:grid;grid-template-columns:1fr;gap:14px;margin-top:20px}
+  .stratblock{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px 24px}
+  .stratblock:hover{border-color:var(--line2)}
+  .stratblock h3{font-size:17px;margin:8px 0 4px;font-weight:600}
+  .stratblock .rank{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+  .stratblock p{font-size:14px;color:var(--muted);margin:8px 0 0}
+  .stratblock ul{margin:10px 0 0;padding-left:20px;font-size:14px;color:var(--muted)}
+  .stratblock li{margin:6px 0}
+  .stratblock li b{color:var(--ink);font-weight:600}
+  .pill{display:inline-block;font-size:11px;font-weight:600;padding:1px 9px;border-radius:999px;margin-left:8px;vertical-align:2px}
+  .pill.good{background:color-mix(in srgb,var(--good) 12%,transparent);color:var(--good)}
+  .pill.warn{background:color-mix(in srgb,var(--warn) 12%,transparent);color:var(--warn)}
+  .foot{margin-top:72px;border-top:1px solid var(--line);padding-top:22px;font-size:12.5px;color:var(--dim)}
+  .foot p{margin:5px 0}
+  .foot b{color:var(--muted);font-weight:600}
+
+  .seg{display:inline-flex;gap:6px;border:1px solid var(--line);border-radius:8px;padding:4px;background:var(--surface2);margin-top:16px;flex-wrap:wrap}
+  .seg button{appearance:none;border:0;background:transparent;color:var(--muted);font:inherit;font-size:12.5px;padding:6px 12px;border-radius:6px;cursor:pointer}
+  .seg button.active{background:var(--surface);color:var(--accent-ink);box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .need{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 16px 14px}
+  .need .idx{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:11px;color:var(--accent);font-weight:700;letter-spacing:.08em}
+  .need h3{font-size:15px;margin:8px 0 6px;font-weight:600;line-height:1.35}
+  .need p{font-size:13px;color:var(--muted);margin:0;line-height:1.65}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="kicker">AI 购车顾问 · 墨西哥 · 会话数据分析</div>
+    <h1>AI 会话数据分析报告</h1>
+    <p class="lede">两周（第1周 2026-08-10—08-16，第2周 2026-08-17—08-23，墨西哥自然周口径）11,659 个去重用户、18,177 条消息的全量分析 —— 谁在问、问什么、AI 承接得如何、转化卡点在哪。</p>
+    <div class="scopenote">口径：<b>分析单位</b>为会话/用户（均去重）；时间按墨西哥自然日聚合，原始表内时间字段仍为 UTC，筛选时按 UTC-6 换算为墨西哥日期；用户按"用户身份标识"去重，空标识不计入。数据源为两周用户会话日志、主线索表及已确认沿用的 GA4 粗反馈/粗采纳口径。卡片触达=卡片消息内容非空或卡片推荐类型非空且不为0。</div>
+  </header>
+
+  <!-- 数据概览 -->
+  <section>
+    <div class="kicker">输出统计总览 · 两周可切换</div>
+    <h2>数据概览</h2>
+    <p class="sub" style="margin-bottom:0">第1周 2026-08-10 至 2026-08-16；第2周 2026-08-17 至 2026-08-23（墨西哥自然周）。点击按钮切换查看两周合计、单周数据和环比变化。</p>
+    <div class="seg" id="overviewTabs" aria-label="数据概览切换">
+      <button class="active" data-view="total">两周合计</button>
+      <button data-view="w1">第1周</button>
+      <button data-view="w2">第2周</button>
+      <button data-view="compare">两周对比</button>
+    </div>
+    <div class="ov" id="overviewCards">
+      <div class="stat"><div class="n" data-key="users">11,659</div><div class="k">去重用户数</div><div class="d" data-note="users">W1 4,798；W2 7,053</div></div>
+      <div class="stat"><div class="n" data-key="sessions">12,617</div><div class="k">去重会话数</div><div class="d" data-note="sessions">W1 5,066；W2 7,551</div></div>
+      <div class="stat"><div class="n" data-key="messages">22.6%</div><div class="k">深度会话用户占比</div><div class="d" data-note="messages">2,638 / 11,659 用户（2v2及以上）</div></div>
+      <div class="stat"><div class="n" data-key="finance">90.1%</div><div class="k">金融意图占比</div><div class="d" data-note="finance">16,376 / 18,177 消息</div></div>
+      <div class="stat"><div class="n" data-key="cards">97.2%</div><div class="k">卡片触达会话占比</div><div class="d" data-note="cards">12,267 / 12,617</div></div>
+      <div class="stat"><div class="n" data-key="leadHook">6.8%</div><div class="k">留资钩子触发率</div><div class="d" data-note="leadHook">852 / 12,617 会话</div></div>
+    </div>
+  </section>
+
+  <!-- Section 01: 周趋势对比 -->
+  <section>
+    <div class="kicker">Section 01 · Weekly</div>
+    <h2><span class="no">01</span>周趋势对比</h2>
+    <p class="sub">第1周 08-10~08-16，第2周 08-17~08-23；均按墨西哥自然日统计。</p>
+    <div class="panel">
+      <table>
+        <thead><tr><th>周期</th><th>消息数</th><th>会话数</th><th>用户数</th><th>平均轮次</th><th>平均时长</th><th>卡片触达</th><th>触达占比</th><th>留资钩子触发</th></tr></thead>
+        <tbody>
+          <tr><td>第1周 · 08-10~08-16</td><td>7,018</td><td>5,066</td><td>4,798</td><td>1.4</td><td>1分2秒</td><td>4,921</td><td>97.1%</td><td>227</td></tr>
+          <tr><td>第2周 · 08-17~08-23</td><td>11,159</td><td>7,551</td><td>7,053</td><td class="hl">1.5</td><td>1分19秒</td><td>7,346</td><td>97.3%</td><td>625</td></tr>
+          <tr><td>环比变化</td><td class="hl">+59.0%</td><td class="hl">+49.1%</td><td class="hl">+47.0%</td><td>+6.7%</td><td>+28.4%</td><td>+49.3%</td><td>+0.1pct</td><td>+175.3%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="insight">
+      <b>第二周整体流量明显上升：</b>用户数、会话数、消息数全面增长，说明不是少数用户重复刷消息，而是整体访问规模扩大。平均轮次从1.39到1.48，用户略微更愿意继续问，但增长不大。<br><br>
+      <b>为什么所有指标上升、会话时长也变长？</b>平均会话时长从1分2秒升到1分19秒，增加28.4%。可能原因：<br>
+      （1）<b>回答更快完成任务</b>——AI更快给出金融方案卡片，用户不用长时间等待或来回问；<br>
+      （2）<b>第二周金融方案类问题更多</b>——金融类问题结构固定（车型+月供+首付+方案），出卡片更快；<br>
+      （3）<b>大量用户仍是单轮咨询</b>——78.0%会话是1轮，单轮占比仍高；<br>
+      （4）<b>留资钩子开始出现</b>——625个留资钩子说明站内承接到留资入口的触发明显增加。<br><br>
+      <b>注意：</b>会话时长变长不能单独证明转化变好，需看后续WhatsApp点击、手机号提交、销售跟进等数据。
+    </div>
+  </section>
+
+  <!-- Section 02: 每日趋势 -->
+  <section>
+    <div class="kicker">Section 02 · Daily</div>
+    <h2><span class="no">02</span>每日趋势</h2>
+    <p class="sub">每日消息数 vs 每日用户数 · 2026-08-10 — 08-23（墨西哥自然日）。</p>
+    <div class="daychart" id="daychart">
+      <div class="dc-head">
+        <h3>日趋势</h3><span class="scope">每日消息数 vs 每日去重用户数 · 2026-08-10 — 08-23（墨西哥自然日）</span>
+      </div>
+      <div class="dcl">
+        <span class="item"><span class="sw" style="background:var(--s1)"></span>每日消息数</span>
+        <span class="item"><span class="sw" style="background:var(--s3)"></span>每日去重用户数</span>
+      </div>
+      <div class="dcwrap" id="dcwrap">
+        <svg viewBox="0 0 860 320" role="img" aria-label="每日消息数与用户数趋势折线图">
+          <defs>
+            <linearGradient id="gradT" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--s1)"/><stop offset="1" stop-color="var(--s1)" stop-opacity="0"/></linearGradient>
+            <linearGradient id="gradD" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--s3)"/><stop offset="1" stop-color="var(--s3)" stop-opacity="0"/></linearGradient>
+          </defs>
+          <g id="gridg">
+            <line class="gridl" x1="50" y1="284" x2="844" y2="284"/><text class="ylab" x="42" y="287">0</text>
+            <line class="gridl" x1="50" y1="231.2" x2="844" y2="231.2"/><text class="ylab" x="42" y="234">500</text>
+            <line class="gridl" x1="50" y1="178.4" x2="844" y2="178.4"/><text class="ylab" x="42" y="181">1,000</text>
+            <line class="gridl" x1="50" y1="125.6" x2="844" y2="125.6"/><text class="ylab" x="42" y="128">1,500</text>
+            <line class="gridl" x1="50" y1="72.8" x2="844" y2="72.8"/><text class="ylab" x="42" y="75">2,000</text>
+            <line class="gridl" x1="50" y1="20" x2="844" y2="20"/><text class="ylab" x="42" y="23">2,500</text>
+          </g>
+          <path class="areaT" d="M50.0,208.1 L111.1,188.5 L172.2,161.3 L233.2,149.9 L294.3,183.3 L355.4,167.6 L416.5,188.2 L477.5,144.6 L538.6,143.3 L599.7,165.2 L660.8,136.7 L721.8,69.6 L782.9,129.1 L844.0,21.1 L844.0,284 L50.0,284 Z"/>
+          <path class="lineT" d="M50.0,208.1 L111.1,188.5 L172.2,161.3 L233.2,149.9 L294.3,183.3 L355.4,167.6 L416.5,188.2 L477.5,144.6 L538.6,143.3 L599.7,165.2 L660.8,136.7 L721.8,69.6 L782.9,129.1 L844.0,21.1"/>
+          <path class="areaD" d="M50.0,225.3 L111.1,208.6 L172.2,195.6 L233.2,194.1 L294.3,220.1 L355.4,206.3 L416.5,224.8 L477.5,188.7 L538.6,193.0 L599.7,203.2 L660.8,190.9 L721.8,152.0 L782.9,182.8 L844.0,117.0 L844.0,284 L50.0,284 Z"/>
+          <path class="lineD" d="M50.0,225.3 L111.1,208.6 L172.2,195.6 L233.2,194.1 L294.3,220.1 L355.4,206.3 L416.5,224.8 L477.5,188.7 L538.6,193.0 L599.7,203.2 L660.8,190.9 L721.8,152.0 L782.9,182.8 L844.0,117.0"/>
+          <g id="mkg">
+            <circle class="mk" cx="50.0" cy="208.1" r="3.4" fill="var(--s1)"/><circle class="mk" cx="111.1" cy="188.5" r="3.4" fill="var(--s1)"/><circle class="mk" cx="172.2" cy="161.3" r="3.4" fill="var(--s1)"/><circle class="mk" cx="233.2" cy="149.9" r="3.4" fill="var(--s1)"/><circle class="mk" cx="294.3" cy="183.3" r="3.4" fill="var(--s1)"/><circle class="mk" cx="355.4" cy="167.6" r="3.4" fill="var(--s1)"/><circle class="mk" cx="416.5" cy="188.2" r="3.4" fill="var(--s1)"/><circle class="mk" cx="477.5" cy="144.6" r="3.4" fill="var(--s1)"/><circle class="mk" cx="538.6" cy="143.3" r="3.4" fill="var(--s1)"/><circle class="mk" cx="599.7" cy="165.2" r="3.4" fill="var(--s1)"/><circle class="mk" cx="660.8" cy="136.7" r="3.4" fill="var(--s1)"/><circle class="mk" cx="721.8" cy="69.6" r="3.4" fill="var(--s1)"/><circle class="mk" cx="782.9" cy="129.1" r="3.4" fill="var(--s1)"/><circle class="mk" cx="844.0" cy="21.1" r="3.4" fill="var(--s1)"/>
+            <circle class="mk" cx="50.0" cy="225.3" r="3.4" fill="var(--s3)"/><circle class="mk" cx="111.1" cy="208.6" r="3.4" fill="var(--s3)"/><circle class="mk" cx="172.2" cy="195.6" r="3.4" fill="var(--s3)"/><circle class="mk" cx="233.2" cy="194.1" r="3.4" fill="var(--s3)"/><circle class="mk" cx="294.3" cy="220.1" r="3.4" fill="var(--s3)"/><circle class="mk" cx="355.4" cy="206.3" r="3.4" fill="var(--s3)"/><circle class="mk" cx="416.5" cy="224.8" r="3.4" fill="var(--s3)"/><circle class="mk" cx="477.5" cy="188.7" r="3.4" fill="var(--s3)"/><circle class="mk" cx="538.6" cy="193.0" r="3.4" fill="var(--s3)"/><circle class="mk" cx="599.7" cy="203.2" r="3.4" fill="var(--s3)"/><circle class="mk" cx="660.8" cy="190.9" r="3.4" fill="var(--s3)"/><circle class="mk" cx="721.8" cy="152.0" r="3.4" fill="var(--s3)"/><circle class="mk" cx="782.9" cy="182.8" r="3.4" fill="var(--s3)"/><circle class="mk" cx="844.0" cy="117.0" r="3.4" fill="var(--s3)"/>
+          </g>
+          <g id="vlabg">
+            <text class="vlabT" x="50.0" y="201.1">719</text><text class="vlabT" x="111.1" y="181.5">904</text><text class="vlabT" x="172.2" y="154.3">1,162</text><text class="vlabT" x="233.2" y="142.9">1,270</text><text class="vlabT" x="294.3" y="176.3">954</text><text class="vlabT" x="355.4" y="160.6">1,102</text><text class="vlabT" x="416.5" y="181.2">907</text><text class="vlabT" x="477.5" y="137.6">1,320</text><text class="vlabT" x="538.6" y="136.3">1,332</text><text class="vlabT" x="599.7" y="158.2">1,125</text><text class="vlabT" x="660.8" y="129.7">1,395</text><text class="vlabT" x="721.8" y="62.6">2,030</text><text class="vlabT" x="782.9" y="122.1">1,467</text><text class="vlabT" x="844.0" y="14.1">2,490</text>
+            <text class="vlabD" x="50.0" y="241.3">556</text><text class="vlabD" x="111.1" y="224.6">714</text><text class="vlabD" x="172.2" y="211.6">837</text><text class="vlabD" x="233.2" y="210.1">851</text><text class="vlabD" x="294.3" y="236.1">605</text><text class="vlabD" x="355.4" y="222.3">736</text><text class="vlabD" x="416.5" y="240.8">561</text><text class="vlabD" x="477.5" y="204.7">902</text><text class="vlabD" x="538.6" y="209.0">862</text><text class="vlabD" x="599.7" y="219.2">765</text><text class="vlabD" x="660.8" y="206.9">882</text><text class="vlabD" x="721.8" y="168.0">1,250</text><text class="vlabD" x="782.9" y="198.8">958</text><text class="vlabD" x="844.0" y="133.0">1,581</text>
+          </g>
+          <g id="xlabg">
+            <text class="xlab" x="50.0" y="304">08-10</text><text class="xlab" x="111.1" y="304">11</text><text class="xlab" x="172.2" y="304">12</text><text class="xlab" x="233.2" y="304">13</text><text class="xlab" x="294.3" y="304">14</text><text class="xlab" x="355.4" y="304">15</text><text class="xlab" x="416.5" y="304">16</text><text class="xlab" x="477.5" y="304">17</text><text class="xlab" x="538.6" y="304">18</text><text class="xlab" x="599.7" y="304">19</text><text class="xlab" x="660.8" y="304">20</text><text class="xlab" x="721.8" y="304">21</text><text class="xlab" x="782.9" y="304">22</text><text class="xlab" x="844.0" y="304">23</text>
+          </g>
+          <line class="guide" id="guide" x1="0" y1="14" x2="0" y2="284"/>
+        </svg>
+        <div class="dctip" id="dctip"></div>
+      </div>
+      <div class="chartlegend" style="margin-top:10px">* 日期按墨西哥自然日聚合；08-23 已由 20260823-20260824 文件补齐。</div>
+    </div>
+    <div class="insight"><b>趋势解读：</b>按墨西哥自然日看，第2周整体高于第1周，08-23 达到两周内最高消息数（2,490条）和最高用户数（1,581个）。新增的 20260823-20260824 文件已补齐 UTC 08-23 06:00~08-24 06:00，对应墨西哥 08-23 整天。</div>
+  </section>
+
+  <!-- Section 03: 用户意图与对话深度 -->
+  <section>
+    <div class="kicker">Section 03 · Intent & Depth</div>
+    <h2><span class="no">03</span>用户意图与会话深度</h2>
+    <p class="sub">用户意图按消息数统计；会话深度按会话ID聚合消息行数分层。</p>
+
+    <div class="chart">
+      <div class="chart-title">用户意图分布 <small>按消息数</small></div>
+      <div class="bar-row">
+        <div class="bar-label"><span class="chip" style="background:var(--s1)"></span>金融</div>
+        <div class="track"><div class="fill" data-w="90.1" style="background:var(--s1)"></div></div>
+        <div class="bar-num">16,376<small> · 90.1%</small></div>
+        <div class="tip">金融意图 · 占全部消息的90.1%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span class="chip" style="background:var(--s2)"></span>选车</div>
+        <div class="track"><div class="fill" data-w="9.9" style="background:var(--s2)"></div></div>
+        <div class="bar-num">1,797<small> · 9.9%</small></div>
+        <div class="tip">选车意图 · 占全部消息的9.9%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span class="chip" style="background:var(--dim)"></span>其他</div>
+        <div class="track"><div class="fill" data-w="0.1" style="background:var(--dim)"></div></div>
+        <div class="bar-num">4<small> · 0.0%</small></div>
+        <div class="tip">其他意图 · 仅4条</div>
+      </div>
+      <div class="chartlegend">占比 = 该意图消息数 / 总消息数(18,177)。</div>
+    </div>
+
+    <div class="chart" style="margin-top:16px">
+      <div class="chart-title">会话深度分布 <small>按会话数</small></div>
+      <div class="bar-row">
+        <div class="bar-label"><span class="chip" style="background:var(--s2)"></span>1轮</div>
+        <div class="track"><div class="fill" data-w="78.0" style="background:var(--s2)"></div></div>
+        <div class="bar-num">9,840<small> · 78.0%</small></div>
+        <div class="tip">9,840个会话 · 问一次就走</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span class="chip" style="background:var(--s1)"></span>2轮</div>
+        <div class="track"><div class="fill" data-w="12.5" style="background:var(--s1)"></div></div>
+        <div class="bar-num">1,576<small> · 12.5%</small></div>
+        <div class="tip">1,576个会话 · 有简单追问</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span class="chip" style="background:var(--s3)"></span>3-5轮</div>
+        <div class="track"><div class="fill" data-w="7.8" style="background:var(--s3)"></div></div>
+        <div class="bar-num">980<small> · 7.8%</small></div>
+        <div class="tip">980个会话 · 有一定深度对话</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span class="chip" style="background:var(--s4)"></span>6轮以上</div>
+        <div class="track"><div class="fill" data-w="1.8" style="background:var(--s4)"></div></div>
+        <div class="bar-num">221<small> · 1.8%</small></div>
+        <div class="tip">221个会话 · 深度互动用户</div>
+      </div>
+      <div class="chartlegend">占比 = 该深度会话数 / 总会话数(12,617)。</div>
+    </div>
+
+    <div class="insight"><b>核心瓶颈：</b>78.0%的会话只有1轮——用户问一次就走。留资钩子基本在第2轮才触发（平均2.1轮），而能坚持到第2轮的会话约22.0%。<b>这意味着要提升留资转化，必须让用户在第1轮就能看到价值</b>——例如点选基本条件后直接出金融方案概览，完整方案或对比分析需联系销售获取。</div>
+  </section>
+
+  <!-- Section 04: 高频需求关键词 -->
+  <section>
+    <div class="kicker">Section 04 · Keywords</div>
+    <h2><span class="no">04</span>需求关键词、入口与内容覆盖</h2>
+    <p class="sub">本模块只保留能反映用户需求或入口触达的口径：用户消息内容匹配、系统意图标签、以及消息+词云/预置入口去重。AI回答内容不计入高频需求，避免把AI主动提到的内容误判为用户需求。</p>
+    <div class="chart">
+      <div class="chart-title">关键词涉及会话数 <small>悬停查看详情</small></div>
+      <div class="bar-row">
+        <div class="bar-label"><span class="chip" style="background:var(--s1)"></span>金融/贷款/融资（用户消息匹配）</div>
+        <div class="track"><div class="fill" data-w="100" style="background:var(--s1)"></div></div>
+        <div class="bar-num">16,376<small> · 90.1%</small></div>
+        <div class="tip">16,376条消息 · 占总消息90.1%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span class="chip" style="background:var(--s3)"></span>选车/车型推荐需求（系统识别为选车意图）</div>
+        <div class="track"><div class="fill" data-w="55.1" style="background:var(--s3)"></div></div>
+        <div class="bar-num">1,797<small> · 9.9%</small></div>
+        <div class="tip">1,797条选车意图消息 · 占总消息9.9%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span class="chip" style="background:var(--s2)"></span>首付（用户消息匹配）</div>
+        <div class="track"><div class="fill" data-w="8.0" style="background:var(--s2)"></div></div>
+        <div class="bar-num">146<small> · 1.2%</small></div>
+        <div class="tip">最低首付问题146条 · 占总会话约1.2%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span class="chip" style="background:var(--s2)"></span>月供（用户消息匹配）</div>
+        <div class="track"><div class="fill" data-w="7.9" style="background:var(--s2)"></div></div>
+        <div class="bar-num">87<small> · 0.7%</small></div>
+        <div class="tip">预估月供问题87条 · 占总会话约0.7%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span class="chip" style="background:var(--s5)"></span>车型对比/哪个好（用户消息匹配）</div>
+        <div class="track"><div class="fill" data-w="10.0" style="background:var(--s5)"></div></div>
+        <div class="bar-num">546<small> · 4.3%</small></div>
+        <div class="tip">车型对比入口/问题546条 · 占总会话约4.3%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span class="chip" style="background:var(--dim)"></span>预算/收入/贷款额度（用户消息匹配）</div>
+        <div class="track"><div class="fill" data-w="1.6" style="background:var(--dim)"></div></div>
+        <div class="bar-num">64<small> · 0.5%</small></div>
+        <div class="tip">收入/贷款额度问题64条 · 占总会话约0.5%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span class="chip" style="background:var(--dim)"></span>金融方案对比需求（消息+入口去重）</div>
+        <div class="track"><div class="fill" data-w="92.0" style="background:var(--dim)"></div></div>
+        <div class="bar-num">10,623<small> · 84.2%</small></div>
+        <div class="tip">按车型金融模板、方案对比、银行、期限、首付、月供等相关入口和主动问题做会话去重后为10,623个</div>
+      </div>
+      <div class="chartlegend">占比 = 该关键词组涉及会话数 / 总会话数(12,617)。用户消息匹配项只看 <code>用户消息内容</code>，但日志无法稳定区分手打、点选词云和预置入口触发；“选车/车型推荐需求”按日志意图标签统计；“金融方案对比需求”按用户消息 + 词云/预置入口去重统计，用于判断是否存在方案对比需求。市场资讯不放入本图，因为AI回答内容不能代表用户真实需求。</div>
+    </div>
+    <div class="insight"><b>需求主线：</b>用户消息内容仍以“金融/贷款/融资”（90.1%消息）为主，选车意图占9.9%消息；金融方案对比在“消息+入口去重”口径下达到84.2%，说明方案对比入口具备需求基础，但不能等同于84.2%的纯手打提问。</div>
+  </section>
+
+  <!-- Section 05: 高频用户问题 Top 15 -->
+  <section>
+    <div class="kicker">Section 05 · Top Questions</div>
+    <h2><span class="no">05</span>剔除预置入口后的高频用户问题 Top 15</h2>
+    <p class="sub">已剔除文件一中的固定引导词，以及 <code>Opciones de financiamiento para {品牌/车系}</code> 等动态模板入口；占比按剔除后非车型金融模板消息 4,985 条计算。当前日志无法100%区分手打和点击，只能按已知引导词与模板规则排除。</p>
+    <div class="panel">
+      <table style="min-width:980px">
+        <thead><tr><th>排名</th><th>用户问题</th><th>出现次数</th><th>占比</th><th>判断</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td style="text-align:left">最低首付是多少？<br><span style="color:var(--dim);font-size:12px">¿Cuál es el enganche mínimo?</span></td><td class="hl">146</td><td>2.9%</td><td>首付门槛需求，建议前置展示最低首付与适用条件。</td></tr>
+          <tr><td>2</td><td style="text-align:left">我的预估月供大概是多少？<br><span style="color:var(--dim);font-size:12px">👨¿Cuál sería mi pago mensual aproximado?</span></td><td>87</td><td>1.7%</td><td>月供测算需求，适合做成首屏计算入口。</td></tr>
+          <tr><td>3</td><td style="text-align:left">我有征信记录，还可以买车吗？<br><span style="color:var(--dim);font-size:12px">Estoy en Buró de Crédito, ¿puedo comprar?</span></td><td>120</td><td>2.4%</td><td>资质审核需求，需要解释可贷条件与替代方案。</td></tr>
+          <tr><td>4</td><td style="text-align:left">除了首付，开始买车还需要存多少钱？<br><span style="color:var(--dim);font-size:12px">¿Cuánto ahorro necesito además del enganche para iniciar la compra?</span></td><td>82</td><td>1.6%</td><td>购车总成本需求，不只是贷款方案。</td></tr>
+          <tr><td>5</td><td style="text-align:left">36、48、60 还是 72 个月？<br><span style="color:var(--dim);font-size:12px">¿36, 48, 60 o 72 meses?</span></td><td>110</td><td>2.2%</td><td>期限对比需求，应展示期限、月供和总成本差异。</td></tr>
+          <tr><td>6</td><td style="text-align:left">利率是多少？<br><span style="color:var(--dim);font-size:12px">¿Qué tasa de interés me cobran?</span></td><td>71</td><td>1.4%</td><td>利率透明度需求，需要区分银行、期限与资质。</td></tr>
+          <tr><td>7</td><td style="text-align:left">按我的收入能贷多少？<br><span style="color:var(--dim);font-size:12px">¿Cuánto me prestarían con mi sueldo?</span></td><td>64</td><td>1.3%</td><td>贷款额度测算需求，与收入、负债和首付强相关。</td></tr>
+          <tr><td>8</td><td style="text-align:left">计算最高贷款额度<br><span style="color:var(--dim);font-size:12px">👉 Calcular monto máximo de crédito</span></td><td>49</td><td>1.0%</td><td>额度工具入口需求，可与月供计算合并。</td></tr>
+          <tr><td>9</td><td style="text-align:left">征信不好能贷款吗？<br><span style="color:var(--dim);font-size:12px">⚡¿Préstamo con mal historial crediticio?</span></td><td>82</td><td>1.6%</td><td>低信用/坏账记录用户需求，需给出可行路径和限制。</td></tr>
+          <tr><td>10</td><td style="text-align:left">能和伴侣或共同借款人合并收入吗？<br><span style="color:var(--dim);font-size:12px">👪¿Puedo sumar mis ingresos con los de mi pareja o un coacreditado?</span></td><td>35</td><td>0.7%</td><td>共同借款需求，适合进入资质预审流程。</td></tr>
+          <tr><td>11</td><td style="text-align:left">我想贷款买车<br><span style="color:var(--dim);font-size:12px">🔜 Quiero comprar un carro con crédito.</span></td><td>36</td><td>0.7%</td><td>泛金融购车需求，应快速分流到车型/预算/资质。</td></tr>
+          <tr><td>12</td><td style="text-align:left">需要一辆耐用可靠的轿车<br><span style="color:var(--dim);font-size:12px">Necesito un Sedán que dure mucho y sea confiable.</span></td><td>23</td><td>0.5%</td><td>用车场景需求，适合给出车型推荐与金融方案联动。</td></tr>
+          <tr><td>13</td><td style="text-align:left">想要一辆适合公路、动力响应好的车<br><span style="color:var(--dim);font-size:12px">Quiero un auto potente para carretera, ¿qué opciones tienen buena respuesta?</span></td><td>13</td><td>0.3%</td><td>性能/场景型选车需求，可结合预算做推荐。</td></tr>
+          <tr><td>14</td><td style="text-align:left">选车前可以先做预审批吗？<br><span style="color:var(--dim);font-size:12px">¿Puedo obtener una preaprobación antes de elegir el auto?</span></td><td>27</td><td>0.5%</td><td>预审需求，接近线索转化节点。</td></tr>
+          <tr><td>15</td><td style="text-align:left">买 Versa 需要月收入多少？<br><span style="color:var(--dim);font-size:12px">¿Cuánto debo ganar al mes para comprar un Versa?</span></td><td>3</td><td>0.1%</td><td>车型+收入门槛需求，应给出收入、首付、月供联动测算。</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="insight"><b>剔除预置入口后的需求主线：</b>用户主动表达更集中在首付门槛、月供测算、征信资质、贷款期限、利率和额度评估。原 Top 15 中 Versa/Aveo/K3 等“具体车型金融方案”与文件一的动态引导模板高度一致，不能直接当作纯用户主动输入高频问题。</div>
+  </section>
+
+  <!-- 默认词云与真实问题对照 -->
+  <section>
+    <div class="kicker">Default Prompts · User Questions</div>
+    <h2>用户真实问题 vs 预置词云/默认问题</h2>
+    <p class="sub">这里不是只看预置问题被点击/发送了多少次，而是把用户真实高频问题与现有预置入口做对照：看哪些入口已经覆盖，哪些真实高频需求还缺少默认入口。</p>
+    <div class="panel">
+      <table style="min-width:980px">
+        <thead><tr><th>真实高频问题/需求簇</th><th>用户真实数据</th><th>对应预置/默认入口</th><th>预置入口数据</th><th>判断</th></tr></thead>
+        <tbody>
+          <tr><td style="text-align:left">热门车型金融方案<br><span style="color:var(--dim);font-size:12px">如 Versa、Aveo、K3、Virtus、MG5、Yaris</span></td><td class="hl">Top 6 合计 7,858（43.2%消息）</td><td>已有销量榜前三/车型对比入口，但单车金融入口不足</td><td>¿Dudas de financiamiento? 261</td><td>不是从0新增入口，而是在现有“销量榜前三哪个更适合”基础上细化：补充Top车型单车金融方案、最低首付/月供、48/72期对比等快捷入口。</td></tr>
+          <tr><td style="text-align:left">车型对比/哪个更适合</td><td>用户消息匹配 546（4.3%会话）</td><td>¿Cuál de los 3 primeros autos me conviene más?</td><td class="hl">546</td><td>已有入口且发送量高，应保留并升级为车型+金融对比卡。</td></tr>
+          <tr><td style="text-align:left">点选式帮选车</td><td>选车意图 1,797条消息（9.9%）</td><td>¿Qué sedán del ranking me conviene?</td><td>232</td><td>入口有效，但还应补充预算、用途、车身类型等标签式选择。</td></tr>
+          <tr><td style="text-align:left">预算/月供筛选</td><td>最低首付 146；月供 87；收入/额度 64</td><td>¿Qué SUVs de la lista cuestan menos de $5,000?</td><td>203</td><td>预算和月供是明确需求，建议从单一SUV问题扩展为预算/月供筛选器。</td></tr>
+          <tr><td style="text-align:left">金融方案对比</td><td>消息+入口去重 10,623（84.2%）</td><td>¿Qué plan de financiación es mejor, 48 o 72 meses?</td><td>213</td><td>存在方案对比需求，应展示多期限、多银行、多首付/月供并列表。</td></tr>
+          <tr><td style="text-align:left">收入判断/预算买车</td><td>预算/收入/贷款额度 64</td><td>¿Qué auto puedo comprar si gano $25,000 al mes?</td><td>158</td><td>已有入口但量级不高，适合并入默认问题和点选式帮选流程。</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="insight"><b>对照结论：</b>预置入口与真实问题方向基本一致，现有“销量榜前三/车型对比”入口应保留。下一步不是简单新增入口，而是细化入口颗粒度：一是把具体车型金融方案拆成Top车型单车入口；二是把预算/月供/首付、征信、48/72期对比从单个问题升级为可点选、可并列比较的结构化入口。</div>
+  </section>
+
+  <!-- Section 06: 卡片触达与留资钩子 -->
+  <section>
+    <div class="kicker">Section 06 · Cards & Contact</div>
+    <h2><span class="no">06</span>卡片触达与留资钩子分析</h2>
+    <p class="sub">卡片推荐类型按消息数统计；留资钩子按消息行统计。</p>
+
+    <div class="chart">
+      <div class="chart-title">卡片推荐类型分布 <small>按消息数</small></div>
+      <div class="bar-row">
+        <div class="bar-label"><span class="chip" style="background:var(--s1)"></span>金融卡片（类型2）</div>
+        <div class="track"><div class="fill" data-w="78.9" style="background:var(--s1)"></div></div>
+        <div class="bar-num">14,336<small> · 78.9%</small></div>
+        <div class="tip">14,336条消息 · 占总消息78.9%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span class="chip" style="background:var(--dim)"></span>无卡片（类型0）</div>
+        <div class="track"><div class="fill" data-w="14.9" style="background:var(--dim)"></div></div>
+        <div class="bar-num">2,702<small> · 14.9%</small></div>
+        <div class="tip">2,702条消息 · 无卡片弹出</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span class="chip" style="background:var(--s2)"></span>车系卡片（类型1）</div>
+        <div class="track"><div class="fill" data-w="6.3" style="background:var(--s2)"></div></div>
+        <div class="bar-num">1,139<small> · 6.3%</small></div>
+        <div class="tip">1,139条消息 · 车系推荐卡片</div>
+      </div>
+      <div class="chartlegend">占比 = 该类型消息数 / 总消息数(18,177)。</div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <table style="min-width:560px">
+        <thead><tr><th>指标</th><th>数值</th><th>占比</th><th>备注</th></tr></thead>
+        <tbody>
+          <tr><td>卡片触达消息数</td><td>15,475</td><td>85.1%</td><td>按消息行统计</td></tr>
+          <tr><td>卡片触达会话数</td><td class="hl">12,267</td><td class="hl">97.2%</td><td>按会话ID去重</td></tr>
+          <tr><td>卡片消息为空的消息数</td><td>2,702</td><td>14.9%</td><td>反向统计</td></tr>
+          <tr><td>留资钩子触发消息数</td><td>949</td><td>5.2%</td><td>留资钩子字段非空</td></tr>
+          <tr><td>留资钩子触发会话数</td><td class="hl">852</td><td class="hl">6.8%</td><td>按会话ID去重</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="insight"><b>触达到留资钩子之间存在断层：</b>卡片触达会话占比97.2%，留资钩子触发率为6.8%。这能说明“卡片展示”到“留资钩子”之间仍有较大流失，但不能直接代表真实成交转化。建议补充卡片点击、WhatsApp点击、手机号提交和销售跟进埋点。</div>
+  </section>
+
+  <!-- Section 07: 车型关注分析 -->
+  <section>
+    <div class="kicker">Section 07 · Vehicles</div>
+    <h2><span class="no">07</span>车型关注分析</h2>
+    <p class="sub">基于当前两周日志中 <code>Opciones de financiamiento para {品牌/车系}</code> 具体车型金融方案模板消息统计；该口径反映入口/模板触达热度，不等同于纯手打车型需求。</p>
+
+    <div class="panel">
+      <div style="font-size:15px;font-weight:600;margin:8px 0 4px;padding-left:4px">品牌 Top 10</div>
+      <table style="min-width:720px">
+        <thead><tr><th>排名</th><th>品牌</th><th>涉及消息数</th><th>占总消息</th><th>分布</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td style="text-align:left">日产（Nissan）</td><td class="hl">3,750</td><td>20.6%</td><td><div class="mini-track"><div class="mini-fill" style="width:100%;background:var(--s1)"></div></div></td></tr>
+          <tr><td>2</td><td style="text-align:left">起亚（Kia）</td><td>1,558</td><td>8.6%</td><td><div class="mini-track"><div class="mini-fill" style="width:41.5%;background:var(--s1)"></div></div></td></tr>
+          <tr><td>3</td><td style="text-align:left">雪佛兰（Chevrolet）</td><td>1,378</td><td>7.6%</td><td><div class="mini-track"><div class="mini-fill" style="width:36.7%;background:var(--s1)"></div></div></td></tr>
+          <tr><td>4</td><td style="text-align:left">大众（Volkswagen）</td><td>1,243</td><td>6.8%</td><td><div class="mini-track"><div class="mini-fill" style="width:33.1%;background:var(--s1)"></div></div></td></tr>
+          <tr><td>5</td><td style="text-align:left">马自达（Mazda）</td><td>976</td><td>5.4%</td><td><div class="mini-track"><div class="mini-fill" style="width:26.0%;background:var(--s1)"></div></div></td></tr>
+          <tr><td>6</td><td style="text-align:left">丰田（Toyota）</td><td>825</td><td>4.5%</td><td><div class="mini-track"><div class="mini-fill" style="width:22.0%;background:var(--s1)"></div></div></td></tr>
+          <tr><td>7</td><td style="text-align:left">现代（Hyundai）</td><td>633</td><td>3.5%</td><td><div class="mini-track"><div class="mini-fill" style="width:16.9%;background:var(--s1)"></div></div></td></tr>
+          <tr><td>8</td><td style="text-align:left">名爵（MG）</td><td>619</td><td>3.4%</td><td><div class="mini-track"><div class="mini-fill" style="width:16.5%;background:var(--s1)"></div></div></td></tr>
+          <tr><td>9</td><td style="text-align:left">吉利（Geely）</td><td>583</td><td>3.2%</td><td><div class="mini-track"><div class="mini-fill" style="width:15.5%;background:var(--s1)"></div></div></td></tr>
+          <tr><td>10</td><td style="text-align:left">道奇（Dodge）</td><td>395</td><td>2.2%</td><td><div class="mini-track"><div class="mini-fill" style="width:10.5%;background:var(--s1)"></div></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <div style="font-size:15px;font-weight:600;margin:8px 0 4px;padding-left:4px">车系 Top 10</div>
+      <table style="min-width:720px">
+        <thead><tr><th>排名</th><th>车系</th><th>涉及消息数</th><th>占总消息</th><th>分布</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td style="text-align:left">Nissan Versa</td><td class="hl">3,049</td><td>16.8%</td><td><div class="mini-track"><div class="mini-fill" style="width:100%;background:var(--s3)"></div></div></td></tr>
+          <tr><td>2</td><td style="text-align:left">Kia K3 Sedán</td><td>1,221</td><td>6.7%</td><td><div class="mini-track"><div class="mini-fill" style="width:40.0%;background:var(--s3)"></div></div></td></tr>
+          <tr><td>3</td><td style="text-align:left">Volkswagen Virtus</td><td>1,143</td><td>6.3%</td><td><div class="mini-track"><div class="mini-fill" style="width:37.5%;background:var(--s3)"></div></div></td></tr>
+          <tr><td>4</td><td style="text-align:left">Chevrolet Aveo Sedán</td><td>1,132</td><td>6.2%</td><td><div class="mini-track"><div class="mini-fill" style="width:37.1%;background:var(--s3)"></div></div></td></tr>
+          <tr><td>5</td><td style="text-align:left">Toyota Yaris Sedán</td><td>722</td><td>4.0%</td><td><div class="mini-track"><div class="mini-fill" style="width:23.7%;background:var(--s3)"></div></div></td></tr>
+          <tr><td>6</td><td style="text-align:left">Mazda 2 Sedán</td><td>591</td><td>3.3%</td><td><div class="mini-track"><div class="mini-fill" style="width:19.4%;background:var(--s3)"></div></div></td></tr>
+          <tr><td>7</td><td style="text-align:left">MG MG5</td><td>568</td><td>3.1%</td><td><div class="mini-track"><div class="mini-fill" style="width:18.6%;background:var(--s3)"></div></div></td></tr>
+          <tr><td>8</td><td style="text-align:left">Geely EMGRAND</td><td>540</td><td>3.0%</td><td><div class="mini-track"><div class="mini-fill" style="width:17.7%;background:var(--s3)"></div></div></td></tr>
+          <tr><td>9</td><td style="text-align:left">Nissan Sentra</td><td>428</td><td>2.4%</td><td><div class="mini-track"><div class="mini-fill" style="width:14.0%;background:var(--s3)"></div></div></td></tr>
+          <tr><td>10</td><td style="text-align:left">Dodge ATTITUDE</td><td>383</td><td>2.1%</td><td><div class="mini-track"><div class="mini-fill" style="width:12.6%;background:var(--s3)"></div></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="insight"><b>车型集中度高：</b>具体车型金融方案模板共 13,192 条，Top 6 车型合计 7,858 条（占总消息43.2%）。建议将 Top 车型金融方案入口前置，但报告中仍需说明这主要是入口/模板触达热度，不完全等同于用户手打车型需求。</div>
+  </section>
+
+  <!-- Section 08: 指标覆盖情况 -->
+  <section>
+    <div class="kicker">Section 08 · Coverage</div>
+    <h2><span class="no">08</span>指标覆盖情况（完整修正版）</h2>
+    <p class="sub">结合会话日志、GA4「AI 全埋点数据」与主线索表后，汇总完整指标清单。主线索表已按墨西哥自然周对应 UTC 边界严格过滤：2026-08-10 06:00:00 至 2026-08-24 06:00:00。</p>
+    <div class="panel">
+      <table style="min-width:980px">
+        <thead><tr><th>指标</th><th>状态</th><th>当前结果</th><th>口径与限制</th></tr></thead>
+        <tbody>
+          <tr><td style="text-align:left">对话深度</td><td><span class="badge good">已回答</span></td><td class="hl">平均1.4轮；1轮占78.0%</td><td>按会话ID聚合有效用户消息数；用于判断用户是否继续追问。</td></tr>
+          <tr><td style="text-align:left">平均对话轮次</td><td><span class="badge good">已回答</span></td><td class="hl">1.4</td><td>有效用户消息行数 / 去重会话数。</td></tr>
+          <tr><td style="text-align:left">平均会话时长</td><td><span class="badge good">已回答</span></td><td class="hl">约1分12秒</td><td>按同一会话内最大时间 - 最小时间估算；周趋势表中单周均值为第1周1分2秒、第2周1分19秒。</td></tr>
+          <tr><td style="text-align:left">真实线索用户平均对话轮次</td><td><span class="badge good">已回答</span></td><td class="hl">2.6轮</td><td>主线索表按 UTC 08-10 06:00~08-24 06:00 过滤后，共94行线索、64个唯一非空UUID；其中49个UUID可匹配AI会话。按每个线索UUID转化前最近一次匹配会话计算，合计126轮 / 49个闭环UUID。</td></tr>
+          <tr><td style="text-align:left">意图识别准确率</td><td><span class="badge good">已回答</span></td><td class="hl">97.6%</td><td>表中意图标签（金融/选车/其他）与用户原始问题语义一致记为识别正确，不一致记为识别错误。当前旧版抽样为 13,051 / 13,378；该项沿用原人工语义核对口径。</td></tr>
+          <tr><td style="text-align:left">推荐匹配度/采纳率</td><td><span class="badge good">已回答</span></td><td class="hl">内容匹配：金融98.4%、选车71.1%；GA4粗采纳72.0%</td><td>内容匹配来自会话日志：金融意图用户收到金融卡、选车意图用户收到车系/车型卡。GA4粗采纳用推荐方案项 <code>caviaix_session_layer_solution_item</code> 点击/曝光估算；仍不是严格卡片采纳率。</td></tr>
+          <tr><td style="text-align:left">对话解决率（真实留资闭环）</td><td><span class="badge good">已回答</span></td><td class="hl">49 / 12,617（0.39%）</td><td>公式：真实留资闭环UUID数 / AI总会话数。94行线索中有64个唯一非空UUID，其中49个能匹配到AI会话日志 <code>用户身份标识</code>；另有15个UUID未匹配、2行UUID为空。</td></tr>
+          <tr><td style="text-align:left">卡片触达后解决率</td><td><span class="badge good">已回答</span></td><td class="hl">49 / 12,267（0.40%）</td><td>公式：真实留资闭环UUID数 / 卡片触达会话数。49个可匹配闭环UUID对应的转化前最近一次会话均有卡片触达；卡片触达总会话数为12,267。</td></tr>
+          <tr><td style="text-align:left">多轮对话完成率</td><td><span class="badge good">已回答</span></td><td class="hl">2,777 / 12,617（22.0%）</td><td>通用标准：同一会话内用户有效提问 ≥2 次，且 AI 有效回复 ≥2 次；即至少完成 2 轮问答。按墨西哥自然周窗口重算为 2,777 / 12,617。</td></tr>
+          <tr><td style="text-align:left">用户满意度评分</td><td><span class="badge good">已回答</span></td><td class="hl">正向反馈 78.8%</td><td>用 GA4 like/dislike 点击估算：like 26 次、dislike 7 次。样本量小，且不是完整评分体系。</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="insight"><b>最新主线索拆解：</b>按墨西哥自然周对应 UTC 边界 2026-08-10 06:00~2026-08-24 06:00 过滤并合并新旧线索表，共 94 行线索：旧表贡献 46 行，新表贡献 48 行；其中留资表单 82 行、预约到店 12 行，唯一非空UUID 64 个，手机号去重 82 个。</div>
+    <div class="insight"><b>闭环匹配结论：</b>64个唯一非空UUID中，49个能在同窗口AI会话日志中匹配到 <code>用户身份标识</code>，用于计算真实留资闭环率；15个UUID未匹配、2行UUID为空，因此未计入闭环分子。</div>
+  </section>
+
+  <!-- Section 09: 产品会议判断 -->
+  <section>
+    <div class="kicker">Section 09 · Strategy</div>
+    <h2><span class="no">09</span>产品会议判断：哪些机会值得讨论</h2>
+    <p class="sub">将竞品机会、用户真实问题和入口覆盖合并判断。这里不再重复展示机会卡片，只保留产品会需要的结论：证据是否充分、影响多少会话、建议如何处理。</p>
+    <div class="panel">
+      <table style="min-width:980px">
+        <thead><tr><th>产品机会</th><th>数据证据</th><th>会议判断</th><th>建议方向</th></tr></thead>
+        <tbody>
+          <tr><td style="text-align:left">默认入口优化</td><td class="hl">18,173 / 18,177（约100%）</td><td>高优先级。现有词云已覆盖销量榜前三/车型对比，但金融、首付、月供、预算、征信等需求仍需要更细的入口承接。</td><td>保留“销量榜前三哪个更适合”等已有入口，并细化为Top车型单车金融方案、最低首付、预估月供、征信能否购车、48/72期方案对比等入口。<br><br><b>示例：</b>“最低首付需要多少钱？”；“月收入$25,000，能买哪些车？帮我估首付和月供”</td></tr>
+          <tr><td style="text-align:left">车型 + 金融方案并列对比</td><td class="hl">10,623 / 12,617（84.2%）</td><td>高优先级。用户大量围绕期限、银行、首付、月供、哪个更好做比较，和金融转化直接相关。</td><td>把单条回答升级为对比卡：车型参数 + 银行 + 期限 + 首付 + 月供 + 利率并列展示。<br><br><b>示例：</b>“Kia K3、Versa、Aveo 哪个金融方案更适合我？”；“48期和72期，月供和总成本差多少？”</td></tr>
+          <tr><td style="text-align:left">点选式帮选车</td><td>1,797 / 18,177（9.9%消息）；1轮会话占78.0%</td><td>可推进。需求规模中等，但能解决用户不愿继续补充条件的问题，适合作为首轮承接工具。</td><td>沿用图中“AI选车”点选方式，用预算、车型、能源、座位数等标签替代打字，形成点选式买车流程。<br><br><b>示例：</b>预算：10万以下 / 10-15万 / 20-30万；车型：轿车 / SUV / MPV；能源：纯电 / 汽油 / 插电混动。</td></tr>
+          <tr><td style="text-align:left">购车转化闭环</td><td>主线索94行、64个唯一非空UUID；49个UUID可匹配AI会话，闭环率0.39%</td><td>需重点讨论。线索表能证明存在真实留资结果，但从AI会话到真实留资的可匹配闭环比例仍低。</td><td>围绕高意向回答前置报价、库存、WhatsApp入口，并补齐点击、提交、销售跟进数据。<br><br><b>示例：</b>回答金融方案后展示“查看库存/获取报价”；对高意向用户直接引导“发送到 WhatsApp 获取可贷方案”。</td></tr>
+          <tr><td style="text-align:left">市场资讯</td><td>4 / 12,617（0.0%）</td><td>暂不作为前台重点。用户消息侧证据弱，不能把 AI 回答中提到的政策/新车当作用户需求。</td><td>作为后台知识库和销售话术维护，不列为本轮产品重点。</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <p><b>数据口径：</b>会话按会话ID去重；用户按用户身份标识去重（空标识不计入）；时间按墨西哥自然日聚合，原始表内时间字段为 UTC；卡片触达=卡片消息内容非空或卡片推荐类型非空且不为0；车型统计仅从FinanceCard JSON解析。</p>
+    <p><b>数据来源：</b>20260810-20260817、20260817-20260823、20260823-20260824 三份用户会话日志；主线索表已合并旧表与最新表并按 UTC 2026-08-10 06:00~2026-08-24 06:00 过滤；GA4 like/dislike 和推荐方案项粗采纳口径沿用既有数据。</p>
+    <p><b>局限性：</b>AI 会话日志已更新为墨西哥自然周口径；主线索表按 UTC 08-10 06:00~08-24 06:00 过滤。真实留资闭环按主线索 UUID 匹配 AI 日志用户身份标识计算，仍有15个UUID未匹配、2行UUID为空；推荐匹配度/采纳率和满意度按既有 GA4 粗口径保留。</p>
+    <p>AI 购车顾问 · 墨西哥市场 · 报告更新 2026-08-25</p>
+  </footer>
+</div>
+
+<script>
+  (function(){
+    var fill=document.querySelectorAll('.fill, .ff');
+    var run=function(){fill.forEach(function(x){x.style.width=x.getAttribute('data-w')+'%'})};
+    if(window.requestAnimationFrame){requestAnimationFrame(function(){requestAnimationFrame(run)})}else{run()}
+
+
+    // overview card toggle
+    var overviewData={
+      total:{users:['11,659','W1 4,798；W2 7,053'],sessions:['12,617','W1 5,066；W2 7,551'],messages:['22.6%','2,638 / 11,659 用户（2v2及以上）'],finance:['90.1%','16,376 / 18,177 消息'],cards:['97.2%','12,267 / 12,617'],leadHook:['6.8%','852 / 12,617 会话']},
+      w1:{users:['4,798','2026-08-10~08-16'],sessions:['5,066','按会话ID去重'],messages:['20.4%','980 / 4,798 用户（2v2及以上）'],finance:['89.9%','6,306 / 7,018 消息'],cards:['97.1%','4,921 / 5,066'],leadHook:['4.5%','227 / 5,066 会话']},
+      w2:{users:['7,053','2026-08-17~08-23'],sessions:['7,551','按会话ID去重'],messages:['23.7%','1,674 / 7,053 用户（2v2及以上）'],finance:['90.2%','10,070 / 11,159 消息'],cards:['97.3%','7,346 / 7,551'],leadHook:['8.3%','625 / 7,551 会话']},
+      compare:{users:['+47.0%','7,053 vs 4,798'],sessions:['+49.1%','7,551 vs 5,066'],messages:['+3.3pct','23.7% vs 20.4%'],finance:['+0.3pct','90.2% vs 89.9%'],cards:['+0.1pct','97.3% vs 97.1%'],leadHook:['+3.8pct','8.3% vs 4.5%']}
+    };
+    var tabs=document.getElementById('overviewTabs');
+    if(tabs){tabs.addEventListener('click',function(e){var b=e.target.closest('button[data-view]');if(!b)return;tabs.querySelectorAll('button').forEach(function(x){x.classList.toggle('active',x===b)});var data=overviewData[b.getAttribute('data-view')];Object.keys(data).forEach(function(k){var n=document.querySelector('[data-key="'+k+'"]'),d=document.querySelector('[data-note="'+k+'"]');if(n)n.textContent=data[k][0];if(d)d.textContent=data[k][1];});});}
+
+
+    // day-trend chart hover
+    var DAYS=["08-10", "08-11", "08-12", "08-13", "08-14", "08-15", "08-16", "08-17", "08-18", "08-19", "08-20", "08-21", "08-22", "08-23"];
+    var MSGS=[719, 904, 1162, 1270, 954, 1102, 907, 1320, 1332, 1125, 1395, 2030, 1467, 2490];
+    var USERS=[556, 714, 837, 851, 605, 736, 561, 902, 862, 765, 882, 1250, 958, 1581];
+    var XS=[50.0,111.1,172.2,233.2,294.3,355.4,416.5,477.5,538.6,599.7,660.8,721.8,782.9,844.0];
+    var wrap=document.getElementById('dcwrap');
+    if(wrap){
+      var svg=wrap.querySelector('svg'), guide=document.getElementById('guide'), tip=document.getElementById('dctip');
+      wrap.addEventListener('mousemove',function(e){
+        var r=svg.getBoundingClientRect();
+        var vx=(e.clientX-r.left)*(860/r.width);
+        var i=0,best=1e9;
+        for(var k=0;k<XS.length;k++){var d=Math.abs(XS[k]-vx);if(d<best){best=d;i=k}}
+        guide.setAttribute('x1',XS[i]);guide.setAttribute('x2',XS[i]);
+        var xpx=XS[i]/860*100;
+        tip.style.left=xpx+'%';
+        tip.innerHTML='<b>'+DAYS[i]+'</b><br><span class="r1">● 消息数 '+MSGS[i]+'</span><br><span class="r2">● 用户数 '+USERS[i]+'</span>';
+        wrap.classList.add('hover');
+      });
+      wrap.addEventListener('mouseleave',function(){wrap.classList.remove('hover')});
+    }
+  })();
+</script>
+</body>
 </html>
