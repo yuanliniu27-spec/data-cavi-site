@@ -162,7 +162,7 @@
     <div class="kicker">AI 购车顾问 · 墨西哥 · 会话数据分析</div>
     <h1>AI 会话数据分析报告</h1>
     <p class="lede">两周（第1周 2026-08-10—08-16，第2周 2026-08-17—08-23，墨西哥自然周口径）11,919 个去重用户、18,591 条消息的全量分析 —— 谁在问、问什么、AI 承接得如何、转化卡点在哪。</p>
-    <div class="scopenote">口径：<b>分析单位</b>为会话/用户（均去重）；时间按墨西哥自然日聚合，原始表内时间字段仍为 UTC，筛选时按 UTC-6 换算为墨西哥日期；用户按"用户身份标识"去重，空标识不计入。数据源为两周用户会话日志（已按自然周过滤）及已确认沿用的主线索表、GA4 粗反馈/粗采纳口径。卡片触达=卡片消息内容非空或卡片推荐类型非空且不为0。</div>
+    <div class="scopenote">口径：<b>分析单位</b>为会话/用户（均去重）；时间按墨西哥自然日聚合，原始表内时间字段仍为 UTC，筛选时按 UTC-6 换算为墨西哥日期；用户按"用户身份标识"去重，空标识不计入。数据源为两周用户会话日志（已按自然周过滤）及已确认沿用的主线索表、GA4 粗反馈/粗采纳口径。AI渗透率=AI会话日志去重用户数 / GA4 AI入口曝光去重用户数。</div>
   </header>
 
   <!-- 数据概览 -->
@@ -181,7 +181,7 @@
       <div class="stat"><div class="n" data-key="sessions">12,907</div><div class="k">去重会话数</div><div class="d" data-note="sessions">W1 5,356；W2 7,551</div></div>
       <div class="stat"><div class="n" data-key="messages">22.6%</div><div class="k">深度会话用户占比</div><div class="d" data-note="messages">2,695 / 11,919 用户（2v2及以上）</div></div>
       <div class="stat"><div class="n" data-key="finance">90.1%</div><div class="k">金融意图占比</div><div class="d" data-note="finance">16,756 / 18,591 消息</div></div>
-      <div class="stat"><div class="n" data-key="cards">97.2%</div><div class="k">卡片触达会话占比</div><div class="d" data-note="cards">12,542 / 12,907</div></div>
+      <div class="stat"><div class="n" data-key="cards">7.9%</div><div class="k">AI渗透率</div><div class="d" data-note="cards">11,919 / 149,985 UV</div></div>
       <div class="stat"><div class="n" data-key="leadHook">6.8%</div><div class="k">留资钩子触发率</div><div class="d" data-note="leadHook">874 / 12,907 会话</div></div>
     </div>
   </section>
@@ -579,7 +579,7 @@
 
   <footer class="foot">
     <p><b>数据口径：</b>会话按会话ID去重；用户按用户身份标识去重（空标识不计入）；时间按墨西哥自然日聚合，原始表内时间字段为 UTC；卡片触达=卡片消息内容非空或卡片推荐类型非空且不为0；车型统计仅从FinanceCard JSON解析。</p>
-    <p><b>数据来源：</b>03_20260810-20260816、04_20260817-20260823 两份用户会话日志；主线索表已合并旧表与最新表并按 UTC 2026-08-10 06:00~2026-08-24 06:00 过滤；GA4 like/dislike 和推荐方案项粗采纳口径沿用既有数据。</p>
+    <p><b>数据来源：</b>03_20260810-20260816、04_20260817-20260823 两份用户会话日志；主线索表已合并旧表与最新表并按 UTC 2026-08-10 06:00~2026-08-24 06:00 过滤；AI渗透率分母来自 GA4 <code>download.csv</code> 中 <code>view_item / caviaix_entry_fab</code> 的 Total users；GA4 like/dislike 和推荐方案项粗采纳口径沿用既有数据。</p>
     <p><b>局限性：</b>AI 会话日志已按 03、04 两个 Excel 文件重算，并剔除落在 08-10~08-23 窗口外的 3 行；主线索表仍沿用既有 UTC 08-10 06:00~08-24 06:00 过滤口径。真实留资闭环按主线索 UUID 匹配 AI 日志用户身份标识计算，仍有14个UUID未匹配、2行UUID为空；当前四份文件不含独立卡片点击明细，因此两个解决率按“卡片触达+真实留资闭环”计算，不能单独验证点击动作；推荐匹配度/采纳率和满意度按既有 GA4 粗口径保留。</p>
     <p>AI 购车顾问 · 墨西哥市场 · 报告更新 2026-08-28</p>
   </footer>
@@ -594,10 +594,10 @@
 
     // overview card toggle
     var overviewData={
-      total:{users:['11,919','W1 5,068；W2 7,053'],sessions:['12,907','W1 5,356；W2 7,551'],messages:['22.6%','2,695 / 11,919 用户（2v2及以上）'],finance:['90.1%','16,756 / 18,591 消息'],cards:['97.2%','12,542 / 12,907'],leadHook:['6.8%','874 / 12,907 会话']},
-      w1:{users:['5,068','2026-08-10~08-16'],sessions:['5,356','按会话ID去重'],messages:['20.5%','1,041 / 5,068 用户（2v2及以上）'],finance:['90.0%','6,686 / 7,432 消息'],cards:['97.0%','5,196 / 5,356'],leadHook:['4.6%','249 / 5,356 会话']},
-      w2:{users:['7,053','2026-08-17~08-23'],sessions:['7,551','按会话ID去重'],messages:['23.7%','1,674 / 7,053 用户（2v2及以上）'],finance:['90.2%','10,070 / 11,159 消息'],cards:['97.3%','7,346 / 7,551'],leadHook:['8.3%','625 / 7,551 会话']},
-      compare:{users:['+39.2%','7,053 vs 5,068'],sessions:['+41.0%','7,551 vs 5,356'],messages:['+3.2pct','23.7% vs 20.5%'],finance:['+0.2pct','90.2% vs 90.0%'],cards:['+0.3pct','97.3% vs 97.0%'],leadHook:['+3.6pct','8.3% vs 4.6%']}
+      total:{users:['11,919','W1 5,068；W2 7,053'],sessions:['12,907','W1 5,356；W2 7,551'],messages:['22.6%','2,695 / 11,919 用户（2v2及以上）'],finance:['90.1%','16,756 / 18,591 消息'],cards:['7.9%','11,919 / 149,985 UV'],leadHook:['6.8%','874 / 12,907 会话']},
+      w1:{users:['5,068','2026-08-10~08-16'],sessions:['5,356','按会话ID去重'],messages:['20.5%','1,041 / 5,068 用户（2v2及以上）'],finance:['90.0%','6,686 / 7,432 消息'],cards:['—','download.csv缺分周UV'],leadHook:['4.6%','249 / 5,356 会话']},
+      w2:{users:['7,053','2026-08-17~08-23'],sessions:['7,551','按会话ID去重'],messages:['23.7%','1,674 / 7,053 用户（2v2及以上）'],finance:['90.2%','10,070 / 11,159 消息'],cards:['—','download.csv缺分周UV'],leadHook:['8.3%','625 / 7,551 会话']},
+      compare:{users:['+39.2%','7,053 vs 5,068'],sessions:['+41.0%','7,551 vs 5,356'],messages:['+3.2pct','23.7% vs 20.5%'],finance:['+0.2pct','90.2% vs 90.0%'],cards:['—','无分周AI入口曝光UV'],leadHook:['+3.6pct','8.3% vs 4.6%']}
     };
     var tabs=document.getElementById('overviewTabs');
     if(tabs){tabs.addEventListener('click',function(e){var b=e.target.closest('button[data-view]');if(!b)return;tabs.querySelectorAll('button').forEach(function(x){x.classList.toggle('active',x===b)});var data=overviewData[b.getAttribute('data-view')];Object.keys(data).forEach(function(k){var n=document.querySelector('[data-key="'+k+'"]'),d=document.querySelector('[data-note="'+k+'"]');if(n)n.textContent=data[k][0];if(d)d.textContent=data[k][1];});});}
