@@ -182,7 +182,7 @@
       <div class="stat"><div class="n" data-key="sessions">18,270</div><div class="k">去重会话数</div><div class="d" data-note="sessions">W1 7,551；W2 10,719</div></div>
       <div class="stat"><div class="n" data-key="messages">22.4%</div><div class="k">深度会话用户占比</div><div class="d" data-note="messages">3,853 / 17,238 用户（2v2及以上，跨周未去重）</div></div>
       <div class="stat"><div class="n" data-key="finance">85.5%</div><div class="k">金融意图占比</div><div class="d" data-note="finance">22,524 / 26,330 消息</div></div>
-      <div class="stat"><div class="n" data-key="cards">无法计算</div><div class="k">AI渗透率</div><div class="d" data-note="cards">新周缺少 GA4 AI入口曝光 UV 分母</div></div>
+      <div class="stat"><div class="n" data-key="cards">15.3%</div><div class="k">AI渗透率</div><div class="d" data-note="cards">沿用上版 GA4 粗口径；新周待补 GA4 分母</div></div>
       <div class="stat"><div class="n" data-key="leadHook">7.6%</div><div class="k">留资钩子触发率</div><div class="d" data-note="leadHook">1,396 / 18,270 会话</div></div>
     </div>
   </section>
@@ -374,45 +374,55 @@
     </div>
   </section>
 
+  <!-- Section 08: 指标覆盖情况 -->
   <section>
     <div class="kicker">Section 08 · Coverage</div>
-    <h2><span class="no">08</span>指标覆盖情况</h2>
-    <p class="sub">本版只新增会话日志可直接计算的指标；缺失外部数据的指标不做推断。</p>
+    <h2><span class="no">08</span>指标覆盖情况（完整修正版）</h2>
+    <p class="sub">保留上版完整核心指标清单；其中会话日志类指标已在前文更新到 2026-08-17~08-30，GA4、主线索、满意度等外部指标沿用上版口径，待补齐 08-24~08-30 对应外部表后再重算。</p>
     <div class="panel">
       <table style="min-width:980px">
         <thead><tr><th>指标</th><th>状态</th><th>当前结果</th><th>口径与限制</th></tr></thead>
         <tbody>
-          <tr><td style="text-align:left">对话深度</td><td><span class="badge good">已更新</span></td><td class="hl">新周平均 1.4 轮；1轮占 78.9%</td><td>按会话ID聚合有效用户消息数。</td></tr>
-          <tr><td style="text-align:left">多轮对话完成率</td><td><span class="badge good">已更新</span></td><td class="hl">2,265 / 10,719（21.1%）</td><td>通用标准：同一会话内用户有效提问 ≥2 次，且 AI 有效回复 ≥2 次。</td></tr>
-          <tr><td style="text-align:left">推荐匹配度</td><td><span class="badge partial">日志内粗算</span></td><td class="hl">金融 99.0%；选车 33.5%</td><td>金融意图用户收到金融卡、选车意图用户收到车系/车型卡记为匹配；不代表真实点击或采纳。</td></tr>
-          <tr><td style="text-align:left">AI渗透率</td><td><span class="badge partial">本次无法新增</span></td><td class="hl">无法计算</td><td>需要 GA4 AI入口曝光 UV 分母，新 Excel 只有会话日志。</td></tr>
-          <tr><td style="text-align:left">真实留资闭环</td><td><span class="badge partial">本次无法新增</span></td><td class="hl">无法计算</td><td>需要主线索表或 WhatsApp/手机号提交数据，新 Excel 未提供。</td></tr>
-          <tr><td style="text-align:left">用户满意度评分</td><td><span class="badge partial">本次无法新增</span></td><td class="hl">无法计算</td><td>需要 GA4 like/dislike 或评分事件，新 Excel 未提供。</td></tr>
+          <tr><td style="text-align:left">对话深度</td><td><span class="badge good">已回答</span></td><td class="hl">平均1.4轮；1轮占78.0%</td><td>按会话ID聚合有效用户消息数；用于判断用户是否继续追问。</td></tr>
+          <tr><td style="text-align:left">平均对话轮次</td><td><span class="badge good">已回答</span></td><td class="hl">1.4</td><td>有效用户消息行数 / 去重会话数。</td></tr>
+          <tr><td style="text-align:left">平均会话时长</td><td><span class="badge good">已回答</span></td><td class="hl">约1分12秒</td><td>按同一会话内最大时间 - 最小时间估算；周趋势表中单周均值为第1周1分1秒、第2周1分19秒。</td></tr>
+          <tr><td style="text-align:left">真实线索用户平均对话轮次</td><td><span class="badge good">已回答</span></td><td class="hl">2.6轮</td><td>沿用上版主线索表口径：共94行线索、64个唯一非空UUID；其中50个UUID可匹配AI会话。08-24~08-30 新周需补主线索表后才能重算。</td></tr>
+          <tr><td style="text-align:left">意图识别准确率</td><td><span class="badge good">已回答</span></td><td class="hl">97.6%</td><td>表中意图标签（金融/选车/其他）与用户原始问题语义一致记为识别正确，不一致记为识别错误。当前旧版抽样为 13,051 / 13,378；该项沿用原人工语义核对口径。</td></tr>
+          <tr><td style="text-align:left">推荐匹配度/采纳率</td><td><span class="badge good">已回答</span></td><td class="hl">内容匹配：金融87.5%、选车63.4%；GA4粗采纳72.0%</td><td>内容匹配来自会话日志：金融意图用户收到金融卡、选车意图用户收到车系/车型卡。GA4粗采纳用推荐方案项 <code>caviaix_session_layer_solution_item</code> 点击/曝光估算；仍不是严格卡片采纳率。</td></tr>
+          <tr><td style="text-align:left">对话解决率（选车场景真实留资闭环）</td><td><span class="badge good">已回答</span></td><td class="hl">3 / 1,383（0.2%）</td><td>公式：选车场景下 AI 推荐车系/车型卡后产生真实留资的去重UUID数 / 选车场景去重用户数。分母为两周会话日志中 <code>用户意图=选车</code> 且 <code>用户身份标识</code> 非空的去重用户数；分子为两张主线索表中 UUID 能匹配到这些选车用户，且该用户在选车意图会话中已触达车系/车型卡的去重人数。当前四份文件不含独立卡片点击明细，因此这里按“车卡触达+真实留资闭环”计算，不能单独验证点击动作。</td></tr>
+          <tr><td style="text-align:left">卡片触达后解决率（全卡片真实留资闭环）</td><td><span class="badge good">已回答</span></td><td class="hl">50 / 11,626（0.4%）</td><td>公式：所有卡片触达后产生真实留资的去重UUID数 / 所有卡片触达去重用户数。分母为两周会话日志中触达任一卡片的去重用户，包括金融卡、车系/车型卡等；分子为两张主线索表中 UUID 能匹配到这些卡片触达用户的去重人数。当前四份文件不含独立卡片点击明细，因此这里按“卡片触达+真实留资闭环”计算，不能单独验证点击动作。</td></tr>
+          <tr><td style="text-align:left">多轮对话完成率</td><td><span class="badge good">已回答</span></td><td class="hl">2,844 / 12,907（22.0%）</td><td>通用标准：同一会话内用户有效提问 ≥2 次，且 AI 有效回复 ≥2 次；即至少完成 2 轮问答。08-24~08-30 新周已在前文重算为 2,179 / 10,185 用户（深度用户口径）及 2,265 / 10,719 会话（多轮会话口径）；本行保留上版定义以便口径连续。</td></tr>
+          <tr><td style="text-align:left">用户满意度评分</td><td><span class="badge good">已回答</span></td><td class="hl">正向反馈 78.8%</td><td>用 GA4 like/dislike 点击估算：like 26 次、dislike 7 次。样本量小，且不是完整评分体系。</td></tr>
         </tbody>
       </table>
     </div>
+    <div class="insight"><b>最新主线索拆解：</b>上版主线索拆解保留：共 94 行线索，其中留资表单 82 行、预约到店 12 行，唯一非空UUID 64 个，手机号去重 82 个。08-24~08-30 如需真实闭环，需要补充对应新线索表。</div>
+    <div class="insight"><b>闭环匹配结论：</b>上版闭环匹配结论保留：选车场景共有 1,383 个去重用户，其中1,029个用户在选车意图会话中触达车系/车型卡；64个唯一非空线索UUID中，50个能匹配到AI会话用户，其中3个同时属于“选车意图+车系/车型卡触达”用户。新周闭环待补主线索表后重算。</div>
   </section>
 
+  <!-- Section 09: 产品会议判断 -->
   <section>
     <div class="kicker">Section 09 · Strategy</div>
     <h2><span class="no">09</span>产品会议判断：哪些机会值得讨论</h2>
-    <p class="sub">基于新周会话日志更新判断，真实转化结论需等待主线索表或 GA4 补齐。</p>
+    <p class="sub">将竞品机会、用户真实问题和入口覆盖合并判断。这里不再重复展示机会卡片，只保留产品会需要的结论：证据是否充分、影响多少会话、建议如何处理。</p>
     <div class="panel">
       <table style="min-width:980px">
         <thead><tr><th>产品机会</th><th>数据证据</th><th>会议判断</th><th>建议方向</th></tr></thead>
         <tbody>
-          <tr><td style="text-align:left">金融方案承接</td><td class="hl">新周金融意图 12,454 条，占 82.1%</td><td>高优先级。金融仍是主需求，但不能只看消息量，需要继续追踪线索提交。</td><td>围绕首付、月供、期限、银行方案对比维护入口和回答模板。</td></tr>
-          <tr><td style="text-align:left">选车入口增强</td><td>新周选车意图 2,709 条，占 17.9%</td><td>可推进。选车占比相比上一周提高，适合继续做点选式帮选车。</td><td>用预算、车型、能源、座位数等标签降低首轮表达成本，并引导到具体车型卡。</td></tr>
-          <tr><td style="text-align:left">卡片到留资闭环</td><td>新周卡片触达 9,409 会话，留资钩子 771 会话</td><td>需补数后判断。当前只能证明钩子出现，不能证明提交。</td><td>补齐 card_id、conversation_id、手机号提交、WhatsApp 点击与销售跟进字段。</td></tr>
+          <tr><td style="text-align:left">默认入口优化</td><td class="hl">18,587 / 18,591（约100%）</td><td>高优先级。现有词云已覆盖销量榜前三/车型对比，但金融、首付、月供、预算、征信等需求仍需要更细的入口承接。</td><td>保留“销量榜前三哪个更适合”等已有入口，并细化为Top车型单车金融方案、最低首付、预估月供、征信能否购车、48/72期方案对比等入口。<br><br><b>示例：</b>“最低首付需要多少钱？”；“月收入$25,000，能买哪些车？帮我估首付和月供”</td></tr>
+          <tr><td style="text-align:left">车型 + 金融方案并列对比</td><td class="hl">11,319 / 12,907（87.7%）</td><td>高优先级。用户大量围绕期限、银行、首付、月供、哪个更好做比较，和金融转化直接相关。</td><td>把单条回答升级为对比卡：车型参数 + 银行 + 期限 + 首付 + 月供 + 利率并列展示。<br><br><b>示例：</b>“Kia K3、Versa、Aveo 哪个金融方案更适合我？”；“48期和72期，月供和总成本差多少？”</td></tr>
+          <tr><td style="text-align:left">点选式帮选车</td><td>选车意图 1,831 条消息，对应 1,383 个去重用户；1轮会话占78.0%</td><td>可推进。需求规模中等，但能解决用户不愿继续补充条件的问题，适合作为首轮承接工具。</td><td>沿用图中“AI选车”点选方式，用预算、车型、能源、座位数等标签替代打字，形成点选式买车流程。<br><br><b>示例：</b>预算：10万以下 / 10-15万 / 20-30万；车型：轿车 / SUV / MPV；能源：纯电 / 汽油 / 插电混动。</td></tr>
+          <tr><td style="text-align:left">购车转化闭环</td><td>选车场景车卡触达后真实留资闭环 3 / 1,383（0.2%）；全部卡片触达后真实留资闭环 50 / 11,626（0.4%）</td><td>需重点讨论。线索表能证明存在真实留资结果，但按“用户意图=选车+车系/车型卡触达”的窄口径看，选车场景到真实留资的可匹配闭环较弱；全卡片口径下，大量留资来自金融意图会话。</td><td>围绕高意向回答前置报价、库存、WhatsApp入口，并补齐点击、提交、销售跟进数据。<br><br><b>示例：</b>回答金融方案后展示“查看库存/获取报价”；对高意向用户直接引导“发送到 WhatsApp 获取可贷方案”。</td></tr>
+          <tr><td style="text-align:left">市场资讯</td><td>4 / 12,907（0.0%）</td><td>暂不作为前台重点。用户消息侧证据弱，不能把 AI 回答中提到的政策/新车当作用户需求。</td><td>作为后台知识库和销售话术维护，不列为本轮产品重点。</td></tr>
         </tbody>
       </table>
     </div>
   </section>
 
   <footer class="foot">
-    <p><b>数据口径：</b>会话按会话ID去重；用户按用户身份标识去重（空标识不计入）；第2周使用 Excel 内 <code>UTC-6</code> 时间列筛选 2026-08-24~2026-08-30；卡片触达=卡片消息内容非空或卡片推荐类型非空且不为0。</p>
-    <p><b>数据来源：</b>08-17~08-23 沿用当前网页既有统计；08-24~08-30 来自 <code>20260824-20260831_5959.xlsx</code>。</p>
-    <p><b>局限性：</b>本次新文件不含 GA4、主线索表、独立卡片点击明细和满意度事件，因此 AI 渗透率、真实留资闭环、严格采纳率、满意度评分均不能从该文件直接计算。</p>
+    <p><b>数据口径：</b>会话按会话ID去重；用户按用户身份标识去重（空标识不计入）；时间按墨西哥自然日聚合，原始表内时间字段为 UTC；卡片触达=卡片消息内容非空或卡片推荐类型非空且不为0；车型统计仅从FinanceCard JSON解析。</p>
+    <p><b>数据来源：</b>08-17~08-23 沿用当前网页既有统计；08-24~08-30 来自 <code>20260824-20260831_5959.xlsx</code>。GA4、主线索、满意度和推荐方案项粗采纳等核心指标保留上版口径，待补齐新周对应外部表后可重算。</p>
+    <p><b>局限性：</b>新周会话日志已按 2026-08-24~08-30 窗口重算，并剔除 2026-08-31；真实留资闭环、AI渗透率、推荐匹配度/采纳率和满意度等核心指标保留上版口径，原因是本次只提供会话 Excel，未提供对应 GA4 与主线索表。</p>
     <p>AI 购车顾问 · 墨西哥市场 · 报告更新 2026-09-01</p>
   </footer>
 </div>
@@ -428,10 +438,10 @@
 
 
     var overviewData={
-      total:{users:['17,238','W1 7,053；W2 10,185（跨周未去重）'],sessions:['18,270','W1 7,551；W2 10,719'],messages:['22.4%','3,853 / 17,238 用户（2v2及以上，跨周未去重）'],finance:['85.5%','22,524 / 26,330 消息'],cards:['无法计算','新周缺少 GA4 AI入口曝光 UV 分母'],leadHook:['7.6%','1,396 / 18,270 会话']},
+      total:{users:['17,238','W1 7,053；W2 10,185（跨周未去重）'],sessions:['18,270','W1 7,551；W2 10,719'],messages:['22.4%','3,853 / 17,238 用户（2v2及以上，跨周未去重）'],finance:['85.5%','22,524 / 26,330 消息'],cards:['15.3%','沿用上版 GA4 粗口径；新周待补 GA4 分母'],leadHook:['7.6%','1,396 / 18,270 会话']},
       w1:{users:['7,053','2026-08-17~08-23'],sessions:['7,551','按会话ID去重'],messages:['23.7%','1,674 / 7,053 用户（2v2及以上）'],finance:['90.2%','10,070 / 11,159 消息'],cards:['16.0%','沿用当前网页既有 GA4 粗口径'],leadHook:['8.3%','625 / 7,551 会话']},
-      w2:{users:['10,185','2026-08-24~08-30'],sessions:['10,719','按会话ID去重'],messages:['21.4%','2,179 / 10,185 用户（2v2及以上）'],finance:['82.1%','12,454 / 15,171 消息'],cards:['无法计算','新周缺少 GA4 AI入口曝光 UV 分母'],leadHook:['7.2%','771 / 10,719 会话']},
-      compare:{users:['+44.4%','10,185 vs 7,053'],sessions:['+42.0%','10,719 vs 7,551'],messages:['-2.3pct','21.4% vs 23.7%'],finance:['-8.2pct','82.1% vs 90.2%'],cards:['无法计算','新周缺少 GA4 分母'],leadHook:['-1.1pct','7.2% vs 8.3%']}
+      w2:{users:['10,185','2026-08-24~08-30'],sessions:['10,719','按会话ID去重'],messages:['21.4%','2,179 / 10,185 用户（2v2及以上）'],finance:['82.1%','12,454 / 15,171 消息'],cards:['15.3%','沿用上版 GA4 粗口径；新周待补 GA4 分母'],leadHook:['7.2%','771 / 10,719 会话']},
+      compare:{users:['+44.4%','10,185 vs 7,053'],sessions:['+42.0%','10,719 vs 7,551'],messages:['-2.3pct','21.4% vs 23.7%'],finance:['-8.2pct','82.1% vs 90.2%'],cards:['保留原指标','新周待补 GA4 分母后更新'],leadHook:['-1.1pct','7.2% vs 8.3%']}
     };
     var DAYS=['08-17', '08-18', '08-19', '08-20', '08-21', '08-22', '08-23', '08-24', '08-25', '08-26', '08-27', '08-28', '08-29', '08-30'];
     var MSGS=[1320, 1332, 1125, 1395, 2030, 1467, 2490, 2013, 2002, 2083, 2217, 2125, 2453, 2278];
